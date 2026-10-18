@@ -5,6 +5,21 @@
 <title>FollowUp — Shared CRM Test</title>
 <style>
 :root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#20233b;background:#f4f6ff;--purple:#6257f5;--line:#e1e5f2}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1100px;margin:28px auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 8px 24px #28316b0a}h1{margin:8px 0;color:var(--purple)}h2{margin-top:0;font-size:19px}p,.muted{color:#68708f}.pill{display:inline-block;font-size:12px;border-radius:99px;background:#eeedff;color:#5145d8;padding:5px 10px}label{display:block;font-weight:650;margin:12px 0 5px}input,select{width:100%;padding:11px;border:1px solid #d8ddef;border-radius:9px;font:inherit;background:#fff}button{border:0;border-radius:9px;background:var(--purple);color:white;font:inherit;font-weight:650;padding:10px 14px;margin:10px 8px 0 0;cursor:pointer}button.secondary{background:#eeedff;color:#5145d8}button.danger{background:#fff0f0;color:#b42318}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.hidden{display:none!important}.message{padding:12px;border-radius:9px;background:#eef5ff;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0f0;color:#b42318}.success{background:#ecfdf3;color:#067647}.lead{border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0}.leadtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.lead strong{font-size:16px}.tag{font-size:12px;background:#f1f2f9;border-radius:20px;padding:4px 8px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}small{color:#68708f}@media(max-width:700px){.grid{grid-template-columns:1fr}.wrap{margin:8px auto;padding:10px}}
+
+/* Refined SaaS UI: restrained motion, clearer hierarchy, accessible focus */
+@keyframes fu-enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.wrap{animation:fu-enter .32s ease-out both}
+.card{transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease}
+.card:hover{box-shadow:0 12px 30px #28316b10;border-color:#d5daf0}
+button{transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+button:hover{transform:translateY(-1px);box-shadow:0 6px 16px #6257f51f}
+button:active{transform:translateY(0)}
+input,select{transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px #6257f51c}
+header h1{letter-spacing:-.035em}
+.pill{letter-spacing:.025em}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
 </style>
 </head>
 <body><main class="wrap">
