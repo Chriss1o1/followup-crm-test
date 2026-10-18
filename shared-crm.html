@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FollowUp — Shared CRM Test</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#20233b;background:#f4f6ff;--purple:#6257f5;--line:#e1e5f2}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1100px;margin:28px auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 8px 24px #28316b0a}h1{margin:8px 0;color:var(--purple)}h2{margin-top:0;font-size:19px}p,.muted{color:#68708f}.pill{display:inline-block;font-size:12px;border-radius:99px;background:#eeedff;color:#5145d8;padding:5px 10px}label{display:block;font-weight:650;margin:12px 0 5px}input,select{width:100%;padding:11px;border:1px solid #d8ddef;border-radius:9px;font:inherit;background:#fff}button{border:0;border-radius:9px;background:var(--purple);color:white;font:inherit;font-weight:650;padding:10px 14px;margin:10px 8px 0 0;cursor:pointer}button.secondary{background:#eeedff;color:#5145d8}button.danger{background:#fff0f0;color:#b42318}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.hidden{display:none!important}.message{padding:12px;border-radius:9px;background:#eef5ff;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0f0;color:#b42318}.success{background:#ecfdf3;color:#067647}.lead{border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0}.leadtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.lead strong{font-size:16px}.tag{font-size:12px;background:#f1f2f9;border-radius:20px;padding:4px 8px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}small{color:#68708f}@media(max-width:700px){.grid{grid-template-columns:1fr}.wrap{margin:8px auto;padding:10px}}
+</style>
+</head>
+<body><main class="wrap">
+<header><span class="pill">SEPARATE TEST BUILD</span><h1>FollowUp CRM</h1><p>Shared CRM prototype · Supabase-backed · Test with sample data only.</p></header>
+<div id="msg" class="message hidden" role="status"></div>
+<section id="auth" class="card">
+<div class="grid">
+<div><h2>Create account</h2><form id="signup"><label>Email</label><input id="suEmail" type="email" autocomplete="email" required><label>Password (at least 8 characters)</label><input id="suPass" type="password" minlength="8" autocomplete="new-password" required><button>Create account</button></form></div>
+<div><h2>Sign in</h2><form id="login"><label>Email</label><input id="liEmail" type="email" autocomplete="email" required><label>Password</label><input id="liPass" type="password" autocomplete="current-password" required><button>Sign in</button></form></div>
+</div>
+</section>
+<section id="app" class="hidden">
+<div class="card"><div class="top"><div><span class="pill">SIGNED IN</span><h2 id="who"></h2></div><button id="out" class="secondary">Sign out</button></div>
+<div class="grid"><div><label>Active workspace</label><select id="teamSelect"></select></div><div><label>Create a workspace</label><form id="newTeam" class="top"><input id="teamName" maxlength="100" placeholder="e.g. My Sales Team" required><button>Create</button></form></div></div><p class="muted">Only members of the selected workspace should be able to read its records. Invitations are not implemented in this prototype yet.</p></div>
+<div class="grid">
+<section class="card"><h2>Add a lead</h2><form id="leadForm"><label>Contact name *</label><input id="leadName" required maxlength="160" placeholder="Alex Morgan"><label>Company</label><input id="leadCompany" maxlength="160" placeholder="Example Ltd"><label>Email</label><input id="leadEmail" type="email" maxlength="320" placeholder="alex@example.com"><label>Status</label><select id="leadStatus"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Won</option><option>Lost</option></select><button id="saveLead">Save lead</button></form></section>
+<section class="card"><div class="top"><h2>Workspace leads</h2><button id="reload" class="secondary">Refresh</button></div><p class="muted">This first version creates leads assigned to the signed-in user. Workspace owners/admins can see all records; regular members see their assigned leads under the database policies.</p><div id="leads"><p class="muted">Choose a workspace to load leads.</p></div></section>
+</div>
+</section>
+<footer class="muted"><small>Prototype only. Do not add real customer or confidential data yet. Uses the Supabase publishable key; never put a service-role key in browser code.</small></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+const cfg={url:'https://fkdqoiurgtqhlhvqtyoh.supabase.co',key:'sb_publishable_11gPpJDRRtyPjDedkk10GA__AUM2FoG'};
+const client=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);let currentUser=null;let teams=[];let activeTeam=null;let busy=false;
+function say(text,kind=''){const el=$('msg');el.textContent=text;el.className='message '+kind}
+function clear(){ $('msg').className='message hidden';$('msg').textContent=''}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('signup').addEventListener('submit',async e=>{e.preventDefault();clear();const {data,error}=await client.auth.signUp({email:$('suEmail').value.trim(),password:$('suPass').value,options:{emailRedirectTo:location.origin+location.pathname}});if(error)return say(error.message,'error');if(data.session){say('Account created and signed in.','success');await refresh()}else say('Account created. If email confirmation is enabled, confirm the email and then sign in.','success')});
+$('login').addEventListener('submit',async e=>{e.preventDefault();clear();const {error}=await client.auth.signInWithPassword({email:$('liEmail').value.trim(),password:$('liPass').value});if(error)return say(error.message,'error');await refresh();say('Signed in.','success')});
+$('out').addEventListener('click',async()=>{await client.auth.signOut();currentUser=null;activeTeam=null;await refresh();say('Signed out.')});
+$('newTeam').addEventListener('submit',async e=>{e.preventDefault();clear();if(!currentUser)return say('Please sign in first.','error');const name=$('teamName').value.trim();if(!name)return;const {data,error}=await client.rpc('create_workspace',{workspace_name:name});if(error)return say('Could not create workspace: '+error.message,'error');$('teamName').value='';await loadTeams(data);say('Workspace created. You are its owner.','success')});
+$('teamSelect').addEventListener('change',async()=>{activeTeam=$('teamSelect').value||null;await loadLeads()});
+$('leadForm').addEventListener('submit',async e=>{e.preventDefault();clear();if(!currentUser||!activeTeam)return say('Create or select a workspace first.','error');const name=$('leadName').value.trim();if(!name)return;const key='lead_'+crypto.randomUUID();const payload={name,company:$('leadCompany').value.trim(),email:$('leadEmail').value.trim(),status:$('leadStatus').value};const {error}=await client.from('crm_records').insert({team_id:activeTeam,record_key:key,record_type:'lead',owner_user_id:currentUser.id,payload,created_by:currentUser.id,updated_by:currentUser.id});if(error)return say('Could not save lead: '+error.message,'error');$('leadForm').reset();say('Lead saved to the selected workspace.','success');await loadLeads()});
+$('reload').addEventListener('click',loadLeads);
+async function loadTeams(preferred){const {data,error}=await client.from('teams').select('id,name,created_at').order('created_at');if(error){say('Could not load workspaces: '+error.message,'error');return}teams=data||[];const sel=$('teamSelect');sel.replaceChildren();teams.forEach(t=>{const op=document.createElement('option');op.value=t.id;op.textContent=t.name;sel.append(op)});if(!teams.length){activeTeam=null;const op=document.createElement('option');op.value='';op.textContent='No workspace yet — create one';sel.append(op);$('leads').innerHTML='<p class="muted">Create a workspace to get started.</p>';return}activeTeam=(preferred&&teams.some(t=>t.id===preferred))?preferred:(activeTeam&&teams.some(t=>t.id===activeTeam)?activeTeam:teams[0].id);sel.value=activeTeam;await loadLeads()}
+async function loadLeads(){const root=$('leads');if(!activeTeam){root.innerHTML='<p class="muted">Create or select a workspace first.</p>';return}root.innerHTML='<p class="muted">Loading leads…</p>';const {data,error}=await client.from('crm_records').select('id,record_key,owner_user_id,payload,created_at').eq('team_id',activeTeam).eq('record_type','lead').is('deleted_at',null).order('created_at',{ascending:false});if(error){root.textContent='Could not load leads: '+error.message;return}root.replaceChildren();if(!data||!data.length){root.innerHTML='<p class="muted">No leads in this workspace yet. Add the first one using the form.</p>';return}data.forEach(r=>{const p=r.payload||{};const article=document.createElement('article');article.className='lead';article.innerHTML='<div class="leadtop"><strong>'+esc(p.name||'Unnamed lead')+'</strong><span class="tag">'+esc(p.status||'New')+'</span></div><div>'+esc(p.company||'')+'</div><div class="muted">'+esc(p.email||'')+'</div><small>Assigned user: '+(r.owner_user_id===currentUser.id?'You':esc(r.owner_user_id.slice(0,8)+'…'))+'</small>';root.append(article)})}
+async function refresh(){const {data:{session}}=await client.auth.getSession();currentUser=session?.user||null;$('auth').classList.toggle('hidden',!!currentUser);$('app').classList.toggle('hidden',!currentUser);if(currentUser){$('who').textContent=currentUser.email||'Signed in';await loadTeams()}else{$('teamSelect').replaceChildren();$('leads').replaceChildren()}}
+client.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});refresh();
+})();
+</script>
+</body></html>
