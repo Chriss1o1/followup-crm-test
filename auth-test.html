@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FollowUp — Supabase connection test</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#20233b;background:#f4f6ff}*{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:36px auto;padding:18px}.card{background:white;border:1px solid #dfe4f4;border-radius:18px;padding:22px;margin:14px 0;box-shadow:0 8px 24px #28316b0d}h1{margin:0 0 8px;color:#5c50ec}p,.muted{color:#68708f}.pill{font-size:12px;border-radius:99px;background:#eeedff;color:#5c50ec;padding:4px 9px}label{display:block;font-weight:650;margin:12px 0 5px}input{width:100%;padding:11px;border:1px solid #dfe4f4;border-radius:9px;font:inherit}button{border:0;border-radius:9px;background:#6257f5;color:white;font:inherit;font-weight:650;padding:10px 14px;margin:12px 8px 0 0;cursor:pointer}.secondary{background:#eeedff;color:#5145d8}.message{padding:12px;border-radius:9px;background:#eef5ff;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0f0;color:#b42318}.success{background:#ecfdf3;color:#067647}.hidden{display:none}li{padding:8px 0;border-bottom:1px solid #eee}
+</style>
+</head><body><main class="wrap">
+<header><span class="pill">SEPARATE TEST SITE</span><h1>FollowUp CRM</h1><p>Step 1: verify Supabase sign-up, sign-in and workspace creation. This does not change your original CRM.</p></header>
+<section class="card" id="auth">
+<h2>Create account</h2><p class="muted">Use an email you can access. If confirmation is enabled, check your inbox.</p>
+<form id="signup"><label>Email</label><input id="suEmail" type="email" autocomplete="email" required><label>Password (at least 8 characters)</label><input id="suPass" type="password" minlength="8" autocomplete="new-password" required><button>Create account</button></form>
+<hr style="border:0;border-top:1px solid #eee;margin:22px 0">
+<h2>Already registered?</h2><form id="login"><label>Email</label><input id="liEmail" type="email" autocomplete="email" required><label>Password</label><input id="liPass" type="password" autocomplete="current-password" required><button>Sign in</button></form>
+</section>
+<div id="msg" class="message hidden" role="status"></div>
+<section class="card hidden" id="session"><p class="pill">SIGNED IN</p><h2 id="email"></h2><button class="secondary" id="out">Sign out</button><hr style="border:0;border-top:1px solid #eee;margin:22px 0">
+<h2>Create your own workspace</h2><p class="muted">Each person can create a separate workspace. Teammates should later be invited into this same workspace to share its leads.</p><form id="workspace"><label>Workspace name</label><input id="teamName" maxlength="100" placeholder="e.g. My Sales Team" required><button>Create workspace</button></form><h2>Your workspaces</h2><ul id="teams"></ul></section>
+<p class="muted" style="font-size:12px">Test only. Do not enter real customer data yet. This page uses your Supabase publishable key, never a service-role key.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+const cfg={url:'https://fkdqoiurgtqhlhvqtyoh.supabase.co',key:'sb_publishable_11gPpJDRRtyPjDedkk10GA__AUM2FoG'};
+const $=id=>document.getElementById(id), client=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+function say(text,kind=''){const el=$('msg');el.textContent=text;el.className='message '+kind}
+function clear(){ $('msg').className='message hidden'; $('msg').textContent=''}
+$('signup').addEventListener('submit',async e=>{e.preventDefault();clear();const {data,error}=await client.auth.signUp({email:$('suEmail').value.trim(),password:$('suPass').value,options:{emailRedirectTo:location.origin+location.pathname}});if(error)return say(error.message,'error');if(data.session){say('Account created and signed in.','success');await refresh()}else say('Account created. Check your email for the confirmation link, then sign in here.','success')});
+$('login').addEventListener('submit',async e=>{e.preventDefault();clear();const {error}=await client.auth.signInWithPassword({email:$('liEmail').value.trim(),password:$('liPass').value});if(error)return say(error.message,'error');say('Signed in successfully.','success');await refresh()});
+$('out').addEventListener('click',async()=>{await client.auth.signOut();await refresh();say('Signed out.')});
+$('workspace').addEventListener('submit',async e=>{e.preventDefault();clear();const name=$('teamName').value.trim();const {data,error}=await client.rpc('create_workspace',{workspace_name:name});if(error)return say('Workspace creation failed: '+error.message,'error');$('teamName').value='';say('Workspace created.','success');await loadTeams()});
+async function loadTeams(){const {data,error}=await client.from('teams').select('id,name,created_at').order('created_at');if(error)return say('Could not load workspaces: '+error.message,'error');$('teams').replaceChildren();if(!data.length){const li=document.createElement('li');li.textContent='No workspace yet. Create one above.';$('teams').append(li)}data.forEach(t=>{const li=document.createElement('li');const strong=document.createElement('strong');strong.textContent=t.name;const meta=document.createElement('div');meta.className='muted';meta.textContent='Created '+new Date(t.created_at).toLocaleString();li.append(strong,meta);$('teams').append(li)})}
+async function refresh(){const {data:{session}}=await client.auth.getSession();$('session').classList.toggle('hidden',!session);$('auth').classList.toggle('hidden',!!session);if(session){$('email').textContent=session.user.email||'Signed in';await loadTeams()}}
+client.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});refresh();
+})();
+</script></body></html>
