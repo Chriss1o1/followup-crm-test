@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FollowUp</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#171b2d;--mute:#5f6680;--line:#dde0ec;--acc:#3b4cca;--accb:#e8ebfb;--warn:#b4491f;--warnb:#fbeae2;--ok:#1d7a4d;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1220;--card:#181c30;--ink:#e9ebf5;--mute:#9aa1bd;--line:#2a2f4a;--acc:#8fa0ff;--accb:#232a52;--warn:#f0956a;--warnb:#3a2218;--ok:#6fd3a0;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:16px}
+h1{font-size:1.3rem;margin:0}h2{font-size:1rem;margin:20px 0 8px}h3{font-size:.95rem;margin:16px 0 6px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+nav{display:flex;gap:4px;margin:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav button{background:none;border:0;padding:8px 14px;color:var(--mute);font:inherit;cursor:pointer;border-bottom:2px solid transparent}
+nav button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--acc);font-weight:600}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
+textarea{resize:vertical}
+.b{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:7px 12px;cursor:pointer}
+.g{background:none;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.quick{display:flex;gap:8px;flex:1;min-width:260px;max-width:560px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:6px}
+.row small{color:var(--mute);display:block}.n{font-weight:600;cursor:pointer}
+.tag{font-size:.78rem;border-radius:99px;padding:1px 9px;background:var(--accb);color:var(--acc);white-space:nowrap}
+.tag.w{background:var(--warnb);color:var(--warn)}
+.acts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.empty,.mute{color:var(--mute)}.empty{padding:6px 0}
+.banner{background:var(--warnb);color:var(--warn);padding:8px 12px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);max-width:640px;width:calc(100% - 20px);padding:16px;max-height:92vh}
+dialog::backdrop{background:#0008}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid label,label.s{font-size:.8rem;color:var(--mute)}.full{grid-column:1/-1}
+.note{border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:6px 0}.note.st{border-color:var(--acc)}.note time{color:var(--mute);font-size:.8rem}
+.chk{display:flex;gap:8px;align-items:center;padding:2px 0}.chk input{width:auto}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;white-space:pre-wrap;font:inherit}
+.sug button{margin:4px 6px 0 0}
+footer{color:var(--mute);font-size:.85rem;margin:28px 0 10px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.row{flex-direction:column;align-items:stretch}}
+
+/* FollowUp visual refresh: futuristic, restrained, and responsive */
+:root{
+ --bg:#f4f6ff;--card:rgba(255,255,255,.88);--ink:#171b35;--mute:#68708f;
+ --line:#dfe4f4;--acc:#6257f5;--accb:#eeedff;--warn:#b45322;--warnb:#fff0e6;--ok:#087f69;
+ color-scheme:light;
+}
+body{
+ min-height:100vh;
+ background:radial-gradient(ellipse at 10% -10%,rgba(116,105,255,.17),transparent 38%),radial-gradient(ellipse at 100% 5%,rgba(42,196,190,.12),transparent 30%),var(--bg);
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ letter-spacing:.005em;
+}
+main{max-width:1180px;padding:clamp(16px,3vw,34px);}
+header{position:relative;gap:16px;padding:20px 22px;border:1px solid rgba(210,216,241,.9);border-radius:20px;background:rgba(255,255,255,.74);box-shadow:0 14px 42px rgba(45,54,112,.07);backdrop-filter:blur(16px)}
+header h1{font-size:1.65rem;font-weight:800;letter-spacing:-.045em;background:linear-gradient(105deg,#5145e5 5%,#7367ff 55%,#0c9d9a 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.quick{max-width:660px}
+input,select,textarea{border-radius:10px;padding:10px 12px;border-color:var(--line);transition:border-color .18s,box-shadow .18s;background:rgba(255,255,255,.94)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#8178ff;box-shadow:0 0 0 3px rgba(98,87,245,.13)}
+button{transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease}
+button:enabled{cursor:pointer}
+button:hover{transform:translateY(-1px)}
+.b{background:linear-gradient(120deg,#6257f5,#4c63e8);color:#fff;border-radius:10px;padding:10px 15px;font-weight:650;box-shadow:0 6px 16px rgba(98,87,245,.2)}
+.b:hover{box-shadow:0 9px 22px rgba(98,87,245,.28)}
+.g{background:rgba(255,255,255,.76);border-color:var(--line);border-radius:10px;padding:8px 11px}
+.g:hover{background:#f0efff;border-color:#c8c3ff}
+nav{gap:6px;margin:16px 0 20px;padding:6px;border:1px solid rgba(210,216,241,.8);border-radius:14px;background:rgba(255,255,255,.62);box-shadow:0 7px 24px rgba(45,54,112,.04)}
+nav button{border-radius:9px;padding:9px 15px;border:1px solid transparent!important}
+nav button[aria-selected=true]{background:linear-gradient(120deg,#6257f5,#4c63e8);color:#fff;border-color:transparent!important;box-shadow:0 5px 14px rgba(98,87,245,.2)}
+#view h2{margin:24px 0 10px;font-size:1.02rem;font-weight:750;letter-spacing:-.015em}
+#view>p{line-height:1.65}
+.row{gap:14px;padding:13px 15px;margin-bottom:8px;border-radius:13px;border-color:rgba(214,220,242,.9);background:var(--card);box-shadow:0 4px 14px rgba(38,49,101,.035);backdrop-filter:blur(10px)}
+.row:hover{border-color:#c8c4ff;box-shadow:0 8px 22px rgba(47,55,120,.075)}
+.row small{margin-top:3px;line-height:1.55}
+.n{color:var(--ink)}.n:hover{color:var(--acc)}
+.tag{padding:3px 10px;font-weight:650;font-size:.74rem;border:1px solid rgba(98,87,245,.08);border-radius:99px}
+.tag.w{border-color:rgba(180,83,34,.12)}
+.banner{border:1px solid rgba(180,83,34,.18);border-radius:12px;padding:11px 14px}
+.empty{padding:13px 2px}
+dialog{border-radius:18px;border-color:var(--line);box-shadow:0 28px 90px rgba(18,25,65,.25);padding:clamp(16px,3vw,24px)}
+dialog::backdrop{background:rgba(14,19,48,.46);backdrop-filter:blur(5px)}
+.grid{gap:10px}
+.note{padding:8px 0 8px 12px;border-left-width:3px}
+pre{border-radius:12px;padding:14px}
+footer{padding:14px 4px;color:var(--mute)}
+@media(max-width:560px){
+ header{padding:16px;border-radius:16px}header h1{font-size:1.4rem}.quick{min-width:100%}nav{overflow-x:auto;flex-wrap:nowrap}nav button{white-space:nowrap;padding:8px 11px}.row{padding:12px}
+}
+@media(prefers-color-scheme:dark){
+ :root{--bg:#0b1020;--card:rgba(20,27,48,.9);--ink:#edf0ff;--mute:#a2accb;--line:#2a3555;--acc:#9d96ff;--accb:#29254c;--warn:#ffb37d;--warnb:#3b281f;--ok:#5ce0bf;color-scheme:dark}
+ body{background:radial-gradient(ellipse at 10% -10%,rgba(100,83,255,.22),transparent 38%),radial-gradient(ellipse at 100% 5%,rgba(28,178,176,.12),transparent 30%),var(--bg)}
+ header,nav{background:rgba(17,23,42,.78);border-color:#2b3554;box-shadow:0 14px 42px rgba(0,0,0,.14)}
+ input,select,textarea,.g{background:rgba(17,23,42,.92);color:var(--ink);border-color:var(--line)}
+ .g:hover{background:#242348;border-color:#5b55a8}
+ .row{border-color:#2b3554;box-shadow:0 4px 14px rgba(0,0,0,.08)}.row:hover{border-color:#6257a8;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+ nav button[aria-selected=true]{color:#fff}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+</style>
+</head>
+<body>
+<main>
+<header><h1>FollowUp</h1><form class="quick" id="quick"><input id="qa" placeholder="New lead: Name, email, what happened or what’s next" aria-label="Quick add lead"><button class="b">Add</button></form></header>
+<nav role="tablist" id="nav"></nav>
+<div id="banner"></div>
+<div id="view"></div>
+<footer>Free and open source. Your data stays on your computer unless you share a folder with your team.</footer>
+</main>
+<dialog id="dlg"></dialog>
+<input type="file" id="file" accept=".csv,.json" hidden>
+<script>
+/*LOGIC*/
+const WD=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'],MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const plus=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((new Date(a+'T12:00')-new Date(b+'T12:00'))/864e5);
+const fmt=s=>new Date(s+'T12:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+function when(s,b=today()){const t=s.toLowerCase(),dow=new Date(b+'T12:00').getDay();let m;
+ if(m=t.match(/\b(\d{4}-\d{2}-\d{2})\b/))return validDate(m[1])?m[1]:'';
+ if(/\btoday\b/.test(t))return b;if(/\btomorrow\b/.test(t))return plus(b,1);
+ if(m=t.match(/\bin (\d+) (day|week|month)s?\b/))return plus(b,m[1]*{day:1,week:7,month:30}[m[2]]);
+ const nm=((1-dow+7)%7)||7;
+ if(/\bnext week\b/.test(t))return plus(b,nm);
+ if(m=t.match(/\bnext (sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/))return plus(b,nm+((WD.indexOf(m[1])-1+7)%7));
+ if(m=t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/))return plus(b,((WD.indexOf(m[1])-dow+7)%7)||7);
+ if(/\bend of (the )?month\b/.test(t)){const d=new Date(b+'T12:00');return iso(new Date(d.getFullYear(),d.getMonth()+1,0,12))}
+ const mo='(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*';
+ m=t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?'+mo+'\\b'));let d1,m1;
+ if(m){d1=+m[1];m1=MO.indexOf(m[2])}else if(m=t.match(new RegExp('\\b'+mo+'\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b'))){m1=MO.indexOf(m[1]);d1=+m[2]}
+ if(d1&&d1<=31){const y=+b.slice(0,4);for(let i=0;i<5;i++){const x=new Date(y+i,m1,d1,12);if(x.getMonth()===m1&&x.getDate()===d1&&iso(x)>=b)return iso(x)}}
+ return ''}
+const VERB=/^(send|call|email|e-mail|ring|follow up|follow-up|book|schedule|meet|check in|chase|invoice|prepare|draft|text|visit|demo|remind|quote|share|confirm|review)\b/i;
+function suggest(text){const out=[];text.split(/[.;\n]|\band\b|,(?=\s*(?:then|and)?\s*\w)/i).forEach(p=>{p=p.trim().replace(/^(then|we need to|i need to|need to|should|will|to|i['’]ll|we['’]ll|remember to|also)\s+/i,'');if(p.length<4||!VERB.test(p))return;
+ const dateHint=/\b(?:today|tomorrow|next week|end of (?:the )?month|in \d+ (?:days?|weeks?|months?)|\d{4}-\d{2}-\d{2}|\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)|(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.test(p);
+ const parsed=when(p);if(dateHint&&!parsed)return;const due=parsed||plus(today(),3);let x=p.replace(/\s+/g,' ');
+ out.push({text:x.charAt(0).toUpperCase()+x.slice(1),due})});return out.slice(0,4)}
+function styleOf(raw){const L=(raw||'').split('\n').map(x=>x.trim()).filter(Boolean),all=L.join(' ');
+ const g=(L.map(x=>x.match(/^(hi|hello|hey|dear|good morning|good afternoon)\b/i)).find(Boolean)||[])[0]||'Hi';
+ const si=L.findIndex(x=>/^(thanks|thank you|best|cheers|regards|kind regards|warm regards|many thanks|speak soon)[,!.]?$/i.test(x));
+ const sign=si>=0?L[si].replace(/[,.!]$/,''):'Thanks',sig=si>=0&&L[si+1]&&L[si+1].length<30?L[si+1]:'';
+ const sents=all.split(/[.!?]+/).filter(x=>x.trim()),avg=sents.length?all.split(/\s+/).length/sents.length:14;
+ return{greet:g.charAt(0).toUpperCase()+g.slice(1),sign,sig,contr:/\w['’](s|re|ll|d|ve|t|m)\b/.test(all)||all.split(/\s+/).length<40,short:avg<12,excl:/!/.test(all),emoji:/\p{Extended_Pictographic}/u.test(all)}}
+function draft(first,ctx,st){let b=[];
+ if(ctx.quote)b.push('I wanted to check in on the quote I sent over.','Have you had a chance to look at it?');
+ else if(ctx.gap>=14)b.push('It’s been a little while since we spoke.','Is this still something you’re looking at?');
+ else b.push('Just following up on our recent '+(ctx.kind||'conversation')+'.',st.short?'Anything you need from me?':'Is there anything you need from me to help you move forward?');
+ if(!st.short)b.push('Happy to answer any questions.');
+ let t=b.join(' ');
+ if(!st.contr)t=t.replace(/It’s/g,'It is').replace(/you’re/g,'you are');
+ if(st.excl)t=t.replace(/questions\./,'questions!');if(st.emoji)t+=' 🙂';
+ return st.greet+' '+first+',\n\n'+t+'\n\n'+st.sign+',\n'+(st.sig||'')}
+const ST=['New','Talking','Quote sent','Won','Lost'],BAD=['__proto__','constructor','prototype','toString','valueOf','hasOwnProperty'];
+const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&iso(new Date(s+'T12:00'))===s;
+const sid=s=>typeof s==='string'&&/^[\w-]{1,40}$/.test(s)&&!BAD.includes(s)?s:'';
+const cap=(v,n)=>typeof v==='string'?v.slice(0,n):'';
+function clean(r){if(!r||typeof r!=='object'||Array.isArray(r))return null;const id=sid(r.id),u=Number(r.u);if(!id||!isFinite(u)||u<=0)return null;
+ const o={id,u,by:sid(r.by),h:Array.isArray(r.h)?r.h.map(Number).filter(isFinite).slice(-30):[]},dt=s=>validDate(s)?s:'';if(r.del===true)o.del=true;
+ if(r.t==='member'){o.t='member';o.name=cap(r.name,80)}
+ else if(r.t==='cfg'&&id==='cfg'){o.t='cfg';o.criteria=(Array.isArray(r.criteria)?r.criteria:[]).map(x=>cap(x,100)).filter(Boolean).slice(0,12)}
+ else if(r.t==='lead'){o.t='lead';['name','company','email','phone','source'].forEach(k=>o[k]=cap(r[k],200));o.owner=sid(r.owner);o.stage=ST.includes(r.stage)?r.stage:'New';o.value=Math.min(1e12,Math.max(0,+r.value||0));o.close=dt(r.close);o.created=dt(r.created);o.met=(Array.isArray(r.met)?r.met:[]).map(x=>cap(x,100)).slice(0,12)}
+ else if(r.t==='note'&&sid(r.lead)){o.t='note';o.lead=r.lead;o.kind=cap(r.kind,20)||'Note';o.text=cap(r.text,5000);o.star=r.star===true;o.date=dt(r.date)}
+ else if(r.t==='task'&&sid(r.lead)){o.t='task';o.lead=r.lead;o.text=cap(r.text,300);o.due=dt(r.due);o.done=r.done===true;o.owner=sid(r.owner)}
+ else return null;return o}
+const body=r=>{const x=Object.assign({},r);['u','by','h'].forEach(k=>delete x[k]);if(!x.del)delete x.del;return JSON.stringify(x,Object.keys(x).sort())};
+function mergeInto(recs,conf,inc){let n=0,bad=0;const priority={member:0,cfg:1,lead:2,note:3,task:4};const ordered=(Array.isArray(inc)?inc:[]).slice().sort((a,b)=>(priority[a&&a.t]??9)-(priority[b&&b.t]??9));ordered.forEach(x=>{const r=clean(x);if(!r){bad++;return}
+ if((r.t==='note'||r.t==='task')&&(!recs[r.lead]||recs[r.lead].t!=='lead')){bad++;return}
+ const c=Object.prototype.hasOwnProperty.call(recs,r.id)?recs[r.id]:null;
+ if(!c){recs[r.id]=r;n++;return}
+ if(r.u===c.u){
+  const rb=body(r),cb=body(c),rKey=String(r.by||'')+'\u0000'+rb,cKey=String(c.by||'')+'\u0000'+cb;
+  if(rb===cb){if(rKey>cKey)recs[r.id]=r;return}
+  const rw=rKey>cKey,winner=rw?r:c,other=rw?c:r;recs[r.id]=winner;
+  conf['cf-'+r.id+'-'+r.u]={id:r.id,snap:other};n++;return
+ }
+ if(r.h.includes(c.u)){recs[r.id]=r;n++;return}if((c.h||[]).includes(r.u))return;
+ const rw=r.u>c.u,l=rw?c:r;if(rw){recs[r.id]=r;n++}
+ if(body(r)!==body(c))conf['cf-'+r.id+'-'+l.u]={id:r.id,snap:l}});return{n,bad}}
+/*END*/
+
+const LS='followup.v1',DEF=['Has a budget','Talking to the decision-maker','Clear need','Timeline agreed'],KINDS=['Call','Email','Meeting','Message'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S={me:'',recs:{},conf:{}},loadMsg='',rmode=false,view='today',mine=true,q='',of='',dir=null,cur='',ptxt='',pk='',sst='Not shared yet. Your data is only on this computer.',tm,syncing=false;
+(function(){let raw='';try{raw=localStorage.getItem(LS)||'';if(!raw)return;const p=JSON.parse(raw),o={},x=mergeInto(o,{},Object.values(p.recs||{}));S.me=typeof p.me==='string'?p.me:'';S.recs=o;S.conf=p.conf&&typeof p.conf==='object'?p.conf:{};
+ if(x.bad){loadMsg=x.bad+' saved records were invalid and were set aside.';localStorage.setItem(LS+'.corrupt',raw)}}catch(e){loadMsg='Your saved data could not be read. A copy was kept so nothing is lost.';try{localStorage.setItem(LS+'.corrupt',raw)}catch(_){}}})();
+const persist=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){alert('Browser storage is full or blocked. Export your data now.')}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const put=r=>{const o=S.recs[r.id];r.h=(r.h||[]).concat(o?[o.u]:[]).slice(-30);r.u=Math.max(Date.now(),o?o.u+1:0);r.by=S.me;S.recs[r.id]=r;persist();clearTimeout(tm);tm=setTimeout(sync,1500);return r};
+const D=t=>Object.values(S.recs).filter(r=>r.t===t&&r.del);
+const R=t=>Object.values(S.recs).filter(r=>r.t===t&&!r.del);
+const nm=id=>S.recs[id]&&!S.recs[id].del?S.recs[id].name:'Unassigned';
+const crit=()=>S.recs.cfg&&S.recs.cfg.criteria&&S.recs.cfg.criteria.length?S.recs.cfg.criteria:DEF;
+const isOpen=l=>l.stage!=='Won'&&l.stage!=='Lost';
+const tasksOf=id=>R('task').filter(t=>t.lead===id);
+const nextTask=id=>tasksOf(id).filter(t=>!t.done&&t.due).sort((a,b)=>a.due<b.due?-1:1)[0];
+const money=n=>n?new Intl.NumberFormat(undefined,{maximumFractionDigits:0}).format(n):'';
+const mkLead=o=>put(Object.assign({t:'lead',id:uid(),name:'',company:'',email:'',phone:'',owner:S.me,stage:'New',value:0,close:'',source:'',met:[],created:today()},o));
+const addNote=(lead,text,kind='Note')=>put({t:'note',id:uid(),lead,kind,text,star:false,date:today()});
+const addTask=(lead,text,due,owner)=>put({t:'task',id:uid(),lead,text,due,done:false,owner:owner||(S.recs[lead]||{}).owner||S.me});
+
+/* ---------- views ---------- */
+function tRow(x){const l=S.recs[x.lead]||{},t=today(),od=x.due&&x.due<t;
+ return `<div class="row"><div><button class="g" data-a="tdone" data-id="${x.id}" aria-label="Mark done">✓ Done</button> <span>${esc(x.text)}</span><small><span class="n" data-a="open" data-id="${x.lead}">${esc(l.name||'Lead')}</span>${l.company?' • '+esc(l.company):''} • ${esc(nm(x.owner))}</small></div><span class="tag${od?' w':''}">${x.due?(od?diff(t,x.due)+' days overdue':fmt(x.due)):'no date'}</span></div>`}
+const lst=(a,m)=>a.length?a.join(''):`<div class="empty">${m}</div>`;
+function vToday(){const t=today(),by=(a,b)=>a.due<b.due?-1:1,ts=R('task').filter(x=>!x.done&&(!mine||x.owner===S.me));
+ const od=ts.filter(x=>x.due&&x.due<t).sort(by),dt=ts.filter(x=>x.due===t),up=ts.filter(x=>x.due>t&&x.due<=plus(t,7)).sort(by);
+ const stuck=R('lead').filter(l=>isOpen(l)&&(!mine||l.owner===S.me)&&!tasksOf(l.id).some(x=>!x.done));
+ return `${cfHtml()}<p><button class="g" data-a="mine">${mine?'Showing my tasks. Switch to the whole team':'Showing the whole team. Switch to my tasks'}</button></p>
+ <h2>Overdue</h2>${lst(od.map(tRow),'Nothing overdue.')}<h2>Today</h2>${lst(dt.map(tRow),'Nothing due today.')}<h2>Next 7 days</h2>${lst(up.map(tRow),'Nothing scheduled.')}
+ <h2>Leads with no next step</h2>${lst(stuck.map(l=>`<div class="row"><div><span class="n" data-a="open" data-id="${l.id}">${esc(l.name)}</span><small>${esc(nm(l.owner))} • ${esc(l.stage)}</small></div><button class="g" data-a="open" data-id="${l.id}">Add next step</button></div>`),'Every open lead has a next step.')}`}
+function vLeads(){const k=q.toLowerCase(),a=R('lead').filter(l=>(!of||l.owner===of)&&(!k||[l.name,l.company,l.email,l.source].join(' ').toLowerCase().includes(k)));
+ const op=a.filter(isOpen),val=op.reduce((x,l)=>x+(+l.value||0),0),t=today();
+ return `<div class="grid" style="margin-bottom:8px"><input id="srch" placeholder="Search ${R('lead').length} leads" value="${esc(q)}" aria-label="Search leads"><select id="ownf" aria-label="Filter by owner"><option value="">Everyone</option>${R('member').map(m=>`<option value="${m.id}"${m.id===of?' selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+ <p class="mute">${op.length} open deals${val?' worth '+money(val):''} • Won: ${money(a.filter(l=>l.stage==='Won').reduce((x,l)=>x+(+l.value||0),0))||0}</p>
+ ${lst(a.sort((x,y)=>(nextTask(x.id)||{due:'9'}).due<(nextTask(y.id)||{due:'9'}).due?-1:1).map(l=>{const n=nextTask(l.id),c=crit(),sc=c.filter(x=>(l.met||[]).includes(x)).length;
+ return `<div class="row"><div><span class="n" data-a="open" data-id="${l.id}">${esc(l.name)}</span> <span class="tag">${esc(l.stage)}</span><small>${[l.company,nm(l.owner),sc+'/'+c.length+' criteria',l.value&&money(l.value)].filter(Boolean).map(esc).join(' • ')}</small></div>${n?`<span class="tag${n.due<t?' w':''}">${fmt(n.due)}</span>`:'<span class="tag w">no next step</span>'}</div>`}),'No leads yet. Add one above or import a spreadsheet in the Team tab.')}`}
+function vTeam(){const ms=R('member'),sup='showDirectoryPicker' in window;
+ return `<h2>People on this team</h2>${ms.map(m=>`<div class="row"><span>${esc(m.name)}${m.id===S.me?' <span class="tag">you</span>':''}</span>${m.id!==S.me?`<button class="g" data-a="rmm" data-id="${m.id}">Remove</button>`:''}</div>`).join('')}
+ <p class="mute">Anyone who opens FollowUp and connects to the same shared folder appears here automatically. You can also add someone by name:</p>
+ <p style="display:flex;gap:8px"><input id="newm" placeholder="Teammate name" aria-label="Teammate name"><button class="g" data-a="addm">Add</button></p>
+ <h2>Work together, free</h2><p>${esc(sst)}</p>
+ <p class="mute">1. Make a locally synced folder (for Google Drive, use Google Drive for desktop) and share it with your team.<br>2. Everyone opens FollowUp in Chrome or Edge and clicks Connect, then picks that same local folder.<br>3. Each person writes a separate file, reducing write collisions. Cloud-drive sync can be delayed; conflicting edits are flagged for review. Anyone with folder access can read the leads.</p>
+ ${sup?`<p class="acts"><button class="b" data-a="conn">Connect shared folder</button><button class="g" data-a="reconn">Reconnect after restart</button><button class="g" data-a="sync">Sync now</button></p>`:'<p class="tag w">This browser can’t open folders. Use Chrome or Edge, or share team files below.</p>'}
+ <p class="acts"><button class="g" data-a="expjson">Export team file</button><button class="g" data-a="imp">Import team file or CSV</button><button class="g" data-a="expcsv">Export leads (CSV)</button><button class="g" data-a="rest">Restore backup (replace all)</button>${localStorage.getItem(LS+'.snap')?'<button class="g" data-a="undo">Undo last import</button>':''}</p>${delHtml()}
+ <h2>Lead criteria (one per line)</h2><textarea id="crit" rows="4">${esc(crit().join('\n'))}</textarea><p><button class="g" data-a="crit">Save criteria</button></p>
+ <h2>My writing style (only on this computer)</h2><p class="mute">Paste 2 or 3 real messages you have sent. Drafts will copy your greeting, sign-off, length and tone.</p><textarea id="sty" rows="5">${esc(localStorage.getItem(LS+'.style')||'')}</textarea><p><button class="g" data-a="style">Save my style</button></p>`}
+const VIEWS={today:['Today',vToday],leads:['Leads',vLeads],team:['Team',vTeam]};
+function render(){
+ $('#banner').innerHTML=bnr();
+ if(!S.me){$('#view').innerHTML=`<h2>Welcome. What’s your name?</h2><p class="mute">Your teammates will see this name on leads and tasks.</p><p style="display:flex;gap:8px"><input id="myname" aria-label="Your name"><button class="b" data-a="start">Start</button></p>`;$('#nav').innerHTML='';return}
+ $('#nav').innerHTML=Object.entries(VIEWS).map(([k,v])=>`<button role="tab" aria-selected="${k===view}" data-a="tab" data-v="${k}">${v[0]}</button>`).join('');
+ $('#view').innerHTML=VIEWS[view][1]()}
+const refresh=()=>{render();if(cur&&$('#dlg').open)dlg(cur)};
+
+/* ---------- lead dialog ---------- */
+function dlg(id){cur=id;const l=S.recs[id],d=$('#dlg'),ms=R('member'),f=(k,lb,t='text',c='')=>`<div class="${c}"><label for="f_${k}">${lb}</label><input id="f_${k}" type="${t}" value="${esc(l[k])}"></div>`;
+ const own=(sel,i)=>`<select id="${i}">${ms.map(m=>`<option value="${m.id}"${m.id===sel?' selected':''}>${esc(m.name)}</option>`).join('')}</select>`;
+ const notes=R('note').filter(n=>n.lead===id).sort((a,b)=>b.u-a.u),ts=tasksOf(id).sort((a,b)=>(a.done-b.done)||(a.due<b.due?-1:1));
+ d.innerHTML=`<div class="grid">${f('name','Name','text','full')}${f('company','Company')}${f('source','Where they came from')}${f('email','Email','email')}${f('phone','Phone','tel')}
+ <div><label for="f_owner">Owner</label>${own(l.owner,'f_owner')}</div><div><label for="f_stage">Stage</label><select id="f_stage">${ST.map(s=>`<option${s===l.stage?' selected':''}>${s}</option>`).join('')}</select></div>${f('value','Deal value','number')}${f('close','Expected close','date')}</div>
+ <h3>Is this a good lead?</h3>${crit().map((c,i)=>`<label class="chk"><input type="checkbox" data-a="met" data-i="${i}"${(l.met||[]).includes(c)?' checked':''}>${esc(c)}</label>`).join('')}
+ <h3>Next steps</h3>${ts.map(x=>`<div class="chk"><input type="checkbox" data-a="tdone" data-id="${x.id}"${x.done?' checked':''} aria-label="Done"><span style="${x.done?'text-decoration:line-through;color:var(--mute)':''}">${esc(x.text)}</span><span class="tag${!x.done&&x.due&&x.due<today()?' w':''}">${x.due?fmt(x.due):'no date'}</span><span class="mute">${esc(nm(x.owner))}</span><button class="g" data-a="tdel" data-id="${x.id}" aria-label="Delete task">×</button></div>`).join('')||'<div class="empty">No next steps yet.</div>'}
+ <div class="grid" style="margin-top:6px"><input id="t_text" placeholder="e.g. Send quote" aria-label="New next step"><input id="t_due" type="date" value="${plus(today(),3)}" aria-label="Due date"></div><p><button class="g" data-a="tadd">Add next step</button></p>
+ <h3>Conversation</h3><div class="grid"><select id="n_kind" aria-label="Type">${KINDS.map(k=>`<option>${k}</option>`).join('')}</select><span></span><textarea id="n_text" rows="3" class="full" placeholder="What was said or agreed? Try: send quote next Tuesday and call on 3 Nov" style="grid-column:1/-1"></textarea></div>
+ <div class="sug" id="sug"></div><p><button class="g" data-a="nadd">Save note</button></p>
+ ${notes.map(n=>`<div class="note${n.star?' st':''}"><time>${n.date} • ${esc(n.kind)} • ${esc(nm(n.by))}</time> <button class="g" data-a="star" data-id="${n.id}" aria-label="Mark important">${n.star?'★':'☆'}</button><div>${esc(n.text)}</div></div>`).join('')||'<div class="empty">No notes yet.</div>'}
+ <div id="panel">${ptxt?`<h3>${pk==='hand'?'Hand-off summary':'Draft message'}</h3><pre id="ptxt">${esc(ptxt)}</pre><div class="acts"><button class="b" data-a="copy">Copy</button><button class="g" data-a="mail">Open in email</button>${pk==='draft'?'<button class="g" data-a="aip">Copy prompt for an AI chat</button>':''}</div>`:''}</div>
+ <div class="acts" style="margin-top:14px;justify-content:space-between"><span class="acts"><button class="g" data-a="draft">Draft follow-up</button><button class="g" data-a="hand">Forward to a teammate</button><button class="g" data-a="del">Delete</button></span><span class="acts"><button class="b" data-a="save">Save and close</button></span></div>`;
+ if(!d.open)d.showModal()}
+function collect(){if(!cur||!S.recs[cur]||!$('#f_name'))return;const l=S.recs[cur],b=JSON.stringify(l),v=k=>$('#f_'+k).value.trim();
+ ['name','company','source','email','phone','owner','stage','close'].forEach(k=>l[k]=v(k));l.value=+v('value')||0;if(JSON.stringify(l)!==b)put(l)}
+function leadCtx(l){const ns=R('note').filter(n=>n.lead===l.id).sort((a,b)=>b.u-a.u),t=today();
+ return{quote:l.stage==='Quote sent'||tasksOf(l.id).some(x=>!x.done&&/quote|proposal/i.test(x.text)),kind:ns[0]&&ns[0].kind!=='Note'?ns[0].kind.toLowerCase():'',gap:ns[0]?diff(t,ns[0].date):30,ns}}
+function handoff(l){const c=crit(),met=(l.met||[]),cx=leadCtx(l),imp=cx.ns.filter(n=>n.star),sh=(imp.length?imp:cx.ns.slice(0,3)).reverse(),ts=tasksOf(l.id).filter(x=>!x.done);
+ return [`Lead: ${l.name}${l.company?' ('+l.company+')':''}`,[l.email,l.phone].filter(Boolean).join(' • '),`Stage: ${l.stage}${l.value?' • Deal value: '+money(l.value):''}${l.close?' • Expected close: '+l.close:''}`,`Owner: ${nm(l.owner)}`,
+ `Criteria met (${met.length}/${c.length}): ${c.filter(x=>met.includes(x)).join(', ')||'none yet'}`,c.filter(x=>!met.includes(x)).length?'Still to confirm: '+c.filter(x=>!met.includes(x)).join(', '):'',
+ ts.length?'\nOpen next steps:\n'+ts.map(x=>`- ${x.text}${x.due?' ('+fmt(x.due)+')':''}`).join('\n'):'',
+ sh.length?`\n${imp.length?'Important conversations':'Recent conversations'}:\n`+sh.map(n=>`- ${n.date} ${n.kind}: ${n.text}`).join('\n'):''].filter(x=>x!=='').join('\n')}
+
+/* ---------- import / export ---------- */
+function csvParse(t){const r=[];let row=[],f='',qt=false;for(let i=0;i<t.length;i++){const c=t[i];
+ if(qt){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else qt=false}else f+=c}else if(c=='"')qt=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.some(x=>x))r.push(row);row=[]}else f+=c}
+ row.push(f);if(row.some(x=>x))r.push(row);return r}
+const csvOut=a=>a.map(r=>r.map(x=>{x=String(x??'');if(/^[=+\-@\t\r]/.test(x))x="'"+x;return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x}).join(',')).join('\r\n');
+function importCsv(t){const r=csvParse(t.replace(/^\uFEFF/,''));if(r.length<2)return alert('No rows found.');
+ const h=r[0].map(x=>x.trim().toLowerCase()),ix=(...n)=>h.findIndex(x=>n.includes(x));
+ const I={n:ix('name','full name','contact name'),f:ix('first name','firstname','given name'),l:ix('last name','lastname','family name'),e:ix('email','e-mail','email address','e-mail 1 - value'),p:ix('phone','phone number','mobile','phone 1 - value'),c:ix('company','company name','organization','organization name','account name'),s:ix('source','lead source','original source'),t:ix('stage','lifecycle stage','status','lead status'),v:ix('value','amount','deal value'),o:ix('notes','note','description'),d:ix('next follow-up','follow up','follow-up date','next_follow_up','due')};
+ const have=new Set(R('lead').map(l=>l.email.toLowerCase()).filter(Boolean));let a=0,k=0;
+ r.slice(1).forEach(x=>{const g=i=>i>=0?(x[i]||'').trim():'',e=g(I.e),name=g(I.n)||[g(I.f),g(I.l)].filter(Boolean).join(' ');if(!name&&!e)return;if(e&&have.has(e.toLowerCase())){k++;return}if(e)have.add(e.toLowerCase());
+  const st=g(I.t).toLowerCase(),l=mkLead({name,email:e,phone:g(I.p),company:g(I.c),source:g(I.s),value:+g(I.v).replace(/[^\d.]/g,'')||0,stage:ST.find(s=>s.toLowerCase()===st)||(/won|customer/.test(st)?'Won':/lost|unqual/.test(st)?'Lost':/quote|proposal|opportunity/.test(st)?'Quote sent':/contact|working|qualified|talk/.test(st)?'Talking':'New')});
+  const nt=g(I.o);if(nt){addNote(l.id,nt);if(isOpen(l))suggest(nt).forEach(s=>addTask(l.id,s.text,s.due))}
+  if(isOpen(l)){const d=g(I.d);if(validDate(d))addTask(l.id,'Follow up',d);else if(!nt)addTask(l.id,'Follow up',plus(today(),3))}a++});
+ refresh();alert(`Imported ${a} leads. Skipped ${k} duplicates.`)}
+function merge(rs){const x=mergeInto(S.recs,S.conf,rs);if(x.n)persist();return x}
+const snap=()=>{try{localStorage.setItem(LS+'.snap',JSON.stringify({recs:Object.values(S.recs),conf:S.conf}))}catch(_){}};
+const short=v=>{const t=Array.isArray(v)?v.join(', '):String(v??'');return t.length>60?t.slice(0,57)+'…':t};
+function cfHtml(){const a=Object.entries(S.conf).filter(([k,c])=>S.recs[c.id]&&!S.recs[c.id].h.includes(c.snap.u));if(!a.length)return'';
+ return '<h2>Needs review: edited at the same time</h2>'+a.map(([k,c])=>{const cu=S.recs[c.id],sn=c.snap,ks=[...new Set([...Object.keys(cu),...Object.keys(sn)])].filter(x=>!['u','by','h','id','t'].includes(x)&&JSON.stringify(cu[x])!==JSON.stringify(sn[x])).slice(0,4);
+ return `<div class="row"><div><b>${esc(cu.name||cu.text||cu.t)}</b> was changed by ${esc(nm(cu.by))} and by ${esc(nm(sn.by))} at the same time<small>${ks.map(x=>esc(x)+': “'+esc(short(cu[x]))+'” (current) vs “'+esc(short(sn[x]))+'” (other)').join('<br>')}</small></div><div class="acts"><button class="g" data-a="cfkeep" data-k="${esc(k)}">Keep current</button><button class="g" data-a="cfuse" data-k="${esc(k)}">Use other</button></div></div>`}).join('')}
+const delHtml=()=>{const a=D('lead').sort((x,y)=>y.u-x.u).slice(0,10);return '<h2>Recently deleted</h2>'+(a.length?a.map(l=>`<div class="row"><span>${esc(l.name)}</span><button class="g" data-a="undel" data-id="${l.id}">Restore</button></div>`).join(''):'<div class="empty">Nothing deleted.</div>')};
+function bnr(){let h='';if(loadMsg)h+=`<div class="banner"><span>${esc(loadMsg)}</span><button class="g" data-a="dlbad">Download saved copy</button></div>`;
+ const lb=+localStorage.getItem(LS+'.bk')||0,d=(Date.now()-lb)/864e5;if(!dir&&S.me&&R('lead').length&&d>14)h+=`<div class="banner"><span>${lb?'Last backup was '+Math.floor(d)+' days ago.':'No backup yet.'} Browser data can be cleared. Keep a copy.</span><button class="g" data-a="expjson">Back up now</button></div>`;return h}
+function dl(name,mime,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+
+/* ---------- shared folder sync ---------- */
+const idb=(m,v)=>new Promise((res,rej)=>{const o=indexedDB.open('followup',1);o.onupgradeneeded=()=>o.result.createObjectStore('h');o.onerror=rej;o.onsuccess=()=>{const st=o.result.transaction('h',m==='get'?'readonly':'readwrite').objectStore('h'),r=m==='get'?st.get('dir'):st.put(v,'dir');r.onsuccess=()=>res(r.result);r.onerror=rej}});
+async function sync(){if(!dir||!S.me||syncing)return;syncing=true;try{let n=0;
+ for await(const [fn,h] of dir.entries()){if(!/^followup-.*\.json$/.test(fn))continue;try{n+=merge(JSON.parse(await(await h.getFile()).text()).recs).n}catch(e){}}
+ const w=await(await dir.getFileHandle('followup-'+S.me+'.json',{create:true})).createWritable();await w.write(JSON.stringify({v:1,recs:Object.values(S.recs).filter(r=>r.by===S.me)}));await w.close();
+ sst='Shared folder “'+dir.name+'” connected. Last sync '+new Date().toLocaleTimeString()+'.';if(n&&!$('#dlg').open)render();else if(view==='team'&&!$('#dlg').open)render()}catch(e){sst='Sync problem: '+e.message}finally{syncing=false}}
+async function connect(re){try{if(re){dir=await idb('get');if(!dir)return alert('No folder saved yet. Click Connect first.');if(await dir.requestPermission({mode:'readwrite'})!=='granted'){dir=null;return}}
+ else{dir=await showDirectoryPicker({mode:'readwrite'});await idb('put',dir)}await sync();render()}catch(e){if(e.name!=='AbortError')alert('Could not open folder: '+e.message)}}
+setInterval(()=>{if(dir&&!document.hidden)sync()},30000);
+
+/* ---------- events ---------- */
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id,L=S.recs[cur];
+ if(a==='start'){const n=$('#myname').value.trim();if(!n)return;S.me=uid();put({t:'member',id:S.me,name:n});render()}
+ else if(a==='tab'){view=b.dataset.v;render()}else if(a==='mine'){mine=!mine;render()}
+ else if(a==='open'){ptxt='';pk='';dlg(id)}
+ else if(a==='save'){collect();cur='';$('#dlg').close();render()}
+ else if(a==='met'&&L){const c=crit()[+b.dataset.i];L.met=(L.met||[]).filter(x=>x!==c);if(b.checked)L.met.push(c);put(L)}
+ else if(a==='tdone'){const t=S.recs[id];if(t){put(Object.assign({},t,{done:!t.done}));cur?(collect(),refresh()):render()}}
+ else if(a==='tdel'){collect();put(Object.assign({},S.recs[id],{del:true}));refresh()}
+ else if(a==='tadd'){const x=$('#t_text').value.trim();if(!x)return;collect();addTask(cur,x,$('#t_due').value);refresh()}
+ else if(a==='sugadd'){collect();addTask(cur,b.dataset.t,b.dataset.d);refresh()}
+ else if(a==='nadd'){const x=$('#n_text').value.trim();if(!x)return;collect();addNote(cur,x,$('#n_kind').value);if(L.stage==='New')L.stage='Talking',put(L);refresh()}
+ else if(a==='star'){put(Object.assign({},S.recs[id],{star:!S.recs[id].star}));collect();refresh()}
+ else if(a==='draft'||a==='hand'||a==='aip'){collect();const l=S.recs[cur],cx=leadCtx(l);
+  if(a==='hand'){pk='hand';ptxt=handoff(l);refresh()}
+  else if(a==='draft'){pk='draft';ptxt=draft((l.name||'there').split(' ')[0],cx,styleOf(localStorage.getItem(LS+'.style')));refresh()}
+  else{const p=`Write a short follow-up message to ${l.name}${l.company?' at '+l.company:''}.\nContext: stage "${l.stage}". ${cx.ns.slice(0,3).map(n=>n.date+' '+n.kind+': '+n.text).join(' | ')}\nMatch my writing style using these real examples:\n${localStorage.getItem(LS+'.style')||'(none provided: keep it friendly and brief)'}\nReturn only the message.`;navigator.clipboard.writeText(p).then(()=>alert('Prompt copied. Paste it into any AI chat.'))}}
+ else if(a==='copy'){navigator.clipboard.writeText(ptxt).then(()=>{b.textContent='Copied'})}
+ else if(a==='mail'){const l=S.recs[cur];location.href='mailto:'+(pk==='draft'?encodeURIComponent(l.email).replace('%40','@'):'')+'?subject='+encodeURIComponent(pk==='hand'?'Lead hand-off: '+l.name:'Following up')+'&body='+encodeURIComponent(ptxt.slice(0,1800))}
+ else if(a==='del'&&L&&confirm('Delete '+L.name+' and its notes and tasks for the whole team? You can restore it from the Team tab.')){[...R('note'),...R('task')].filter(x=>x.lead===cur).forEach(x=>put(Object.assign({},x,{del:true})));put(Object.assign({},L,{del:true}));cur='';$('#dlg').close();render()}
+ else if(a==='addm'){const n=$('#newm').value.trim();if(n){put({t:'member',id:uid(),name:n});render()}}
+ else if(a==='rmm'&&confirm('Remove '+nm(id)+'? Their leads stay and can be reassigned.')){put(Object.assign({},S.recs[id],{del:true}));render()}
+ else if(a==='conn')connect(false);else if(a==='reconn')connect(true);else if(a==='sync'){await sync();render()}
+ else if(a==='crit'){const c=$('#crit').value.split('\n').map(x=>x.trim()).filter(Boolean);put({t:'cfg',id:'cfg',criteria:c.length?c:DEF});render()}
+ else if(a==='style'){try{localStorage.setItem(LS+'.style',$('#sty').value)}catch(_){}b.textContent='Saved'}
+ else if(a==='imp'){rmode=false;$('#file').click()}else if(a==='rest'){rmode=true;$('#file').click()}
+ else if(a==='cfkeep'||a==='cfuse'){const c=S.conf[b.dataset.k],cu=c&&S.recs[c.id];if(cu){const h=[...cu.h,c.snap.u];put(a==='cfkeep'?Object.assign({},cu,{h}):Object.assign({},c.snap,{h:[...h,cu.u]}))}delete S.conf[b.dataset.k];persist();render()}
+ else if(a==='undel'){const l=S.recs[id];if(l){[...D('note'),...D('task')].filter(x=>x.lead===id&&Math.abs(x.u-l.u)<3000).forEach(x=>put(Object.assign({},x,{del:false})));put(Object.assign({},l,{del:false}));render()}}
+ else if(a==='dlbad')dl('followup-unreadable-data.txt','text/plain',localStorage.getItem(LS+'.corrupt')||'');
+ else if(a==='undo'){try{const p=JSON.parse(localStorage.getItem(LS+'.snap')),o={};mergeInto(o,{},Object.values(p.recs));if(confirm('Go back to how your data looked before the last import or restore?')){S.recs=o;S.conf=p.conf||{};persist();localStorage.removeItem(LS+'.snap');render()}}catch(_){alert('Nothing to undo.')}}
+ else if(a==='expjson'){dl('followup-team-file.json','application/json',JSON.stringify({v:1,exported:new Date().toISOString(),recs:Object.values(S.recs)},null,1));try{localStorage.setItem(LS+'.bk',Date.now())}catch(_){}render()}
+ else if(a==='expcsv'){const c=crit();dl('leads.csv','text/csv',csvOut([['name','company','email','phone','owner','stage','value','expected_close','source','criteria_met','next_step','next_due','last_note']].concat(R('lead').map(l=>{const n=nextTask(l.id),ln=R('note').filter(x=>x.lead===l.id).sort((a,b)=>b.u-a.u)[0];return[l.name,l.company,l.email,l.phone,nm(l.owner),l.stage,l.value,l.close,l.source,(l.met||[]).length+'/'+c.length,n?n.text:'',n?n.due:'',ln?ln.text:'']}))))}});
+document.addEventListener('input',e=>{const i=e.target.id;
+ if(i==='srch'){q=e.target.value;const p=e.target.selectionStart;render();const s=$('#srch');s.focus();s.setSelectionRange(p,p)}
+ else if(i==='n_text'){const s=suggest(e.target.value);$('#sug').innerHTML=s.map(x=>`<button class="g" data-a="sugadd" data-t="${esc(x.text)}" data-d="${x.due}">＋ ${esc(x.text)} • ${fmt(x.due)}</button>`).join('')}});
+document.addEventListener('change',e=>{if(e.target.id==='ownf'){of=e.target.value;render()}});
+$('#file').addEventListener('change',e=>{const f=e.target.files[0],rm=rmode;rmode=false;e.target.value='';if(!f)return;if(f.size>25e6)return alert('That file is too large (limit 25 MB).');const r=new FileReader();r.onload=()=>{
+ if(/\.json$/i.test(f.name)){let p;try{p=JSON.parse(r.result)}catch(x){return alert('That file is not valid JSON, so nothing was changed.')}
+  if(!p||!Array.isArray(p.recs))return alert('That does not look like a FollowUp file, so nothing was changed.');
+  if(rm){const t={},x=mergeInto(t,{},p.recs),n=Object.values(t).filter(z=>z.t==='lead'&&!z.del).length;if(!confirm(`Replace everything with this backup (${n} leads)? Your current data is kept for “Undo last import”.`))return;snap();const me=S.recs[S.me];S.recs=t;S.conf={};if(me&&!t[S.me])put(me);persist();refresh();alert(x.bad?`Restored. ${x.bad} invalid records were skipped.`:'Restored.')}
+  else{snap();const x=merge(p.recs);refresh();alert(`Merged ${x.n} changes. Skipped ${x.bad} invalid records.`)}}
+ else{snap();importCsv(r.result)}};r.readAsText(f)});
+$('#quick').addEventListener('submit',e=>{e.preventDefault();if(!S.me)return;const p=$('#qa').value.split(',').map(x=>x.trim()).filter(Boolean);if(!p.length)return;
+ const em=p.find(x=>x.includes('@'))||'',rest=p.filter(x=>x!==em),l=mkLead({name:rest[0]||em,email:em}),nt=rest.slice(1).join(', ');
+ if(nt){addNote(l.id,nt);const s=suggest(nt);s.forEach(x=>addTask(l.id,x.text,x.due))}
+ if(!tasksOf(l.id).length)addTask(l.id,'Follow up',plus(today(),3));$('#qa').value='';view='leads';render()});
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
+render();sync();
+</script>
+</body>
+</html>
