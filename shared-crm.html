@@ -18,7 +18,18 @@
 </section>
 <section id="app" class="hidden">
 <div class="card"><div class="top"><div><span class="pill">SIGNED IN</span><h2 id="who"></h2></div><button id="out" class="secondary">Sign out</button></div>
-<div class="grid"><div><label>Active workspace</label><select id="teamSelect"></select></div><div><label>Create a workspace</label><form id="newTeam" class="top"><input id="teamName" maxlength="100" placeholder="e.g. My Sales Team" required><button>Create</button></form></div></div><p class="muted">Only members of the selected workspace should be able to read its records. Invitations are not implemented in this prototype yet.</p></div>
+<div class="grid"><div><label>Active workspace</label><select id="teamSelect"></select></div><div><label>Create a workspace</label><form id="newTeam" class="top"><input id="teamName" maxlength="100" placeholder="e.g. My Sales Team" required><button>Create</button></form></div></div><p class="muted">Workspace records are protected by Supabase policies. Invite teammates below to collaborate in this workspace.</p></div>
+<section class="card" id="inviteCard">
+<div class="top"><div><h2>Team invitations</h2><p class="muted">Invite someone by email. They must sign in with that same email to join this workspace.</p></div><button id="refreshInvites" class="secondary" type="button">Refresh invitations</button></div>
+<form id="inviteForm" class="grid">
+<div><label for="inviteEmail">Teammate's email</label><input id="inviteEmail" type="email" autocomplete="email" maxlength="320" placeholder="teammate@example.com" required></div>
+<div><label for="inviteRole">Workspace role</label><select id="inviteRole"><option value="member">Member — assigned leads</option><option value="admin">Admin — manage workspace</option></select></div>
+<div><button id="sendInvite" type="submit">Create invitation</button></div>
+</form>
+<div id="inviteResult" class="hidden"></div>
+<h3>Pending invitations</h3><div id="invites"><p class="muted">Choose a workspace to view invitations.</p></div>
+<p class="muted"><small>This creates an invitation record and a shareable link. It does not send an email automatically yet.</small></p>
+</section>
 <div class="grid">
 <section class="card"><h2>Add a lead</h2><form id="leadForm"><label>Contact name *</label><input id="leadName" required maxlength="160" placeholder="Alex Morgan"><label>Company</label><input id="leadCompany" maxlength="160" placeholder="Example Ltd"><label>Email</label><input id="leadEmail" type="email" maxlength="320" placeholder="alex@example.com"><label>Status</label><select id="leadStatus"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Won</option><option>Lost</option></select><button id="saveLead">Save lead</button></form></section>
 <section class="card"><div class="top"><h2>Workspace leads</h2><button id="reload" class="secondary">Refresh</button></div><p class="muted">This first version creates leads assigned to the signed-in user. Workspace owners/admins can see all records; regular members see their assigned leads under the database policies.</p><div id="leads"><p class="muted">Choose a workspace to load leads.</p></div></section>
@@ -39,12 +50,69 @@ $('signup').addEventListener('submit',async e=>{e.preventDefault();clear();const
 $('login').addEventListener('submit',async e=>{e.preventDefault();clear();const {error}=await client.auth.signInWithPassword({email:$('liEmail').value.trim(),password:$('liPass').value});if(error)return say(error.message,'error');await refresh();say('Signed in.','success')});
 $('out').addEventListener('click',async()=>{await client.auth.signOut();currentUser=null;activeTeam=null;await refresh();say('Signed out.')});
 $('newTeam').addEventListener('submit',async e=>{e.preventDefault();clear();if(!currentUser)return say('Please sign in first.','error');const name=$('teamName').value.trim();if(!name)return;const {data,error}=await client.rpc('create_workspace',{workspace_name:name});if(error)return say('Could not create workspace: '+error.message,'error');$('teamName').value='';await loadTeams(data);say('Workspace created. You are its owner.','success')});
-$('teamSelect').addEventListener('change',async()=>{activeTeam=$('teamSelect').value||null;await loadLeads()});
+$('teamSelect').addEventListener('change',async()=>{activeTeam=$('teamSelect').value||null;await loadLeads();await loadInvitations()});
 $('leadForm').addEventListener('submit',async e=>{e.preventDefault();clear();if(!currentUser||!activeTeam)return say('Create or select a workspace first.','error');const name=$('leadName').value.trim();if(!name)return;const key='lead_'+crypto.randomUUID();const payload={name,company:$('leadCompany').value.trim(),email:$('leadEmail').value.trim(),status:$('leadStatus').value};const {error}=await client.from('crm_records').insert({team_id:activeTeam,record_key:key,record_type:'lead',owner_user_id:currentUser.id,payload,created_by:currentUser.id,updated_by:currentUser.id});if(error)return say('Could not save lead: '+error.message,'error');$('leadForm').reset();say('Lead saved to the selected workspace.','success');await loadLeads()});
 $('reload').addEventListener('click',loadLeads);
-async function loadTeams(preferred){const {data,error}=await client.from('teams').select('id,name,created_at').order('created_at');if(error){say('Could not load workspaces: '+error.message,'error');return}teams=data||[];const sel=$('teamSelect');sel.replaceChildren();teams.forEach(t=>{const op=document.createElement('option');op.value=t.id;op.textContent=t.name;sel.append(op)});if(!teams.length){activeTeam=null;const op=document.createElement('option');op.value='';op.textContent='No workspace yet — create one';sel.append(op);$('leads').innerHTML='<p class="muted">Create a workspace to get started.</p>';return}activeTeam=(preferred&&teams.some(t=>t.id===preferred))?preferred:(activeTeam&&teams.some(t=>t.id===activeTeam)?activeTeam:teams[0].id);sel.value=activeTeam;await loadLeads()}
+$('refreshInvites').addEventListener('click',loadInvitations);
+$('inviteForm').addEventListener('submit',async e=>{
+e.preventDefault();clear();
+if(!currentUser||!activeTeam)return say('Sign in and select a workspace first.','error');
+const email=$('inviteEmail').value.trim().toLowerCase();
+const role=$('inviteRole').value;
+$('sendInvite').disabled=true;
+const {data,error}=await client.rpc('create_team_invitation',{target_team_id:activeTeam,invite_email:email,invite_role:role});
+$('sendInvite').disabled=false;
+if(error)return say('Could not create invitation: '+error.message,'error');
+const link=new URL(location.href);link.search='';link.hash='';link.searchParams.set('invite',data);
+const result=$('inviteResult');result.className='message success';result.innerHTML='';
+const title=document.createElement('p');title.textContent='Invitation created for '+email+'. Share this link with the invitee:';
+const linkBox=document.createElement('input');linkBox.type='text';linkBox.readOnly=true;linkBox.value=link.toString();linkBox.setAttribute('aria-label','Invitation link');
+const copy=document.createElement('button');copy.type='button';copy.textContent='Copy invitation link';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(link.toString());say('Invitation link copied.','success')}catch{linkBox.focus();linkBox.select();say('Select and copy the invitation link shown above.','success')}});
+result.append(title,linkBox,copy);
+$('inviteEmail').value='';
+say('Invitation created. Email delivery is not enabled yet.','success');
+await loadInvitations();
+});
+let handlingInvite=false;
+async function handleInviteLink(){
+const invitationId=new URLSearchParams(location.search).get('invite');
+if(!invitationId||!currentUser||handlingInvite)return;
+handlingInvite=true;
+const {data,error}=await client.rpc('accept_team_invitation',{invitation_id:invitationId});
+if(error){say('Invitation not accepted: '+error.message+' Make sure you are signed in with the invited email address.','error');handlingInvite=false;return}
+history.replaceState({},'',location.pathname);
+activeTeam=data;
+say('Invitation accepted. You have joined the workspace.','success');
+await loadTeams(data);
+handlingInvite=false;
+}
+async function loadInvitations(){
+const root=$('invites');
+if(!currentUser||!activeTeam){root.innerHTML='<p class="muted">Select a workspace first.</p>';return}
+root.innerHTML='<p class="muted">Loading invitations…</p>';
+const {data,error}=await client.from('team_invitations').select('id,email,role,created_at,accepted_at').eq('team_id',activeTeam).is('accepted_at',null).order('created_at',{ascending:false});
+if(error){root.textContent='Could not load invitations: '+error.message;return}
+root.replaceChildren();
+if(!data||!data.length){root.innerHTML='<p class="muted">No pending invitations.</p>';return}
+data.forEach(inv=>{
+const item=document.createElement('article');item.className='lead';
+const top=document.createElement('div');top.className='leadtop';
+const email=document.createElement('strong');email.textContent=inv.email;
+const role=document.createElement('span');role.className='tag';role.textContent=inv.role;
+top.append(email,role);
+const created=document.createElement('small');created.textContent='Created '+new Date(inv.created_at).toLocaleString();
+const revoke=document.createElement('button');revoke.type='button';revoke.className='danger';revoke.textContent='Revoke';revoke.addEventListener('click',async()=>{
+if(!confirm('Revoke the pending invitation for '+inv.email+'?'))return;
+const {error:deleteError}=await client.from('team_invitations').delete().eq('id',inv.id).eq('team_id',activeTeam).is('accepted_at',null);
+if(deleteError)return say('Could not revoke invitation: '+deleteError.message,'error');
+say('Invitation revoked.','success');await loadInvitations();
+});
+item.append(top,created,revoke);root.append(item);
+});
+}
+async function loadTeams(preferred){const {data,error}=await client.from('teams').select('id,name,created_at').order('created_at');if(error){say('Could not load workspaces: '+error.message,'error');return}teams=data||[];const sel=$('teamSelect');sel.replaceChildren();teams.forEach(t=>{const op=document.createElement('option');op.value=t.id;op.textContent=t.name;sel.append(op)});if(!teams.length){activeTeam=null;const op=document.createElement('option');op.value='';op.textContent='No workspace yet — create one';sel.append(op);$('leads').innerHTML='<p class="muted">Create a workspace to get started.</p>';return}activeTeam=(preferred&&teams.some(t=>t.id===preferred))?preferred:(activeTeam&&teams.some(t=>t.id===activeTeam)?activeTeam:teams[0].id);sel.value=activeTeam;await loadLeads();await loadInvitations()}
 async function loadLeads(){const root=$('leads');if(!activeTeam){root.innerHTML='<p class="muted">Create or select a workspace first.</p>';return}root.innerHTML='<p class="muted">Loading leads…</p>';const {data,error}=await client.from('crm_records').select('id,record_key,owner_user_id,payload,created_at').eq('team_id',activeTeam).eq('record_type','lead').is('deleted_at',null).order('created_at',{ascending:false});if(error){root.textContent='Could not load leads: '+error.message;return}root.replaceChildren();if(!data||!data.length){root.innerHTML='<p class="muted">No leads in this workspace yet. Add the first one using the form.</p>';return}data.forEach(r=>{const p=r.payload||{};const article=document.createElement('article');article.className='lead';article.innerHTML='<div class="leadtop"><strong>'+esc(p.name||'Unnamed lead')+'</strong><span class="tag">'+esc(p.status||'New')+'</span></div><div>'+esc(p.company||'')+'</div><div class="muted">'+esc(p.email||'')+'</div><small>Assigned user: '+(r.owner_user_id===currentUser.id?'You':esc(r.owner_user_id.slice(0,8)+'…'))+'</small>';root.append(article)})}
-async function refresh(){const {data:{session}}=await client.auth.getSession();currentUser=session?.user||null;$('auth').classList.toggle('hidden',!!currentUser);$('app').classList.toggle('hidden',!currentUser);if(currentUser){$('who').textContent=currentUser.email||'Signed in';await loadTeams()}else{$('teamSelect').replaceChildren();$('leads').replaceChildren()}}
+async function refresh(){const {data:{session}}=await client.auth.getSession();currentUser=session?.user||null;$('auth').classList.toggle('hidden',!!currentUser);$('app').classList.toggle('hidden',!currentUser);if(currentUser){$('who').textContent=currentUser.email||'Signed in';await loadTeams();await handleInviteLink()}else{$('teamSelect').replaceChildren();$('leads').replaceChildren();$('invites').innerHTML='<p class="muted">Sign in to manage invitations.</p>'}}
 client.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});refresh();
 })();
 </script>
