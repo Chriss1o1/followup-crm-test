@@ -12,8 +12,13 @@ create table if not exists public.crm_activity (
   actor_user_id uuid not null,
   before_payload jsonb,
   after_payload jsonb,
+  before_owner_id uuid,
+  after_owner_id uuid,
   created_at timestamptz not null default now()
 );
+
+alter table public.crm_activity add column if not exists before_owner_id uuid;
+alter table public.crm_activity add column if not exists after_owner_id uuid;
 
 create index if not exists crm_activity_team_created_idx
   on public.crm_activity(team_id, created_at desc);
@@ -95,13 +100,13 @@ begin
   end if;
 
   insert into public.crm_activity
-    (team_id, record_id, record_key, record_type, action, actor_user_id, before_payload, after_payload)
+    (team_id, record_id, record_key, record_type, action, actor_user_id, before_payload, after_payload, before_owner_id, after_owner_id)
   values
     (coalesce(new.team_id, old.team_id),
      coalesce(new.id, old.id),
      coalesce(new.record_key, old.record_key),
      coalesce(new.record_type, old.record_type),
-     event_action, actor, old_payload, new_payload);
+     event_action, actor, old_payload, new_payload, old.owner_user_id, new.owner_user_id);
 
   return coalesce(new, old);
 end;
